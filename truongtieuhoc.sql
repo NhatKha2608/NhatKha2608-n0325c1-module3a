@@ -203,5 +203,144 @@ SELECT DISTINCT ma_mh FROM ket_qua_hoc_tap;
 
 SELECT DISTINCT ma_gvcn FROM lop WHERE ma_gvcn IS NOT NULL;
 
+-- Group by --
+select ma_mh, avg(diem_thi_cuoi_ky) as diem_tb_cuoi_ky
+from ket_qua_hoc_tap
+group by ma_mh;
+
+select ma_mh, avg(diem_thi_cuoi_ky) as diem_tb_cuoi_ky
+from ket_qua_hoc_tap
+group by ma_mh
+having avg(diem_thi_cuoi_ky) > 8;
+
+select* from hoc_sinh having gioi_tinh = 'Nam';
+
+select dia_chi from hoc_sinh group by dia_chi;
+
+select ho_ten_hs, gioi_tinh from hoc_sinh group by ho_ten_hs, gioi_tinh;
+
+select ho_ten_hs from hoc_sinh group by ho_ten_hs;
+
+select kq.ma_mh, ten_mh, diem_thi_cuoi_ky 
+from ket_qua_hoc_tap kq 
+join mon_hoc mh on kq.ma_mh = mh.ma_mh
+where diem_thi_cuoi_ky is not null
+group by kq.ma_mh, diem_thi_cuoi_ky ;
 
 
+select ma_gv, ho_ten_gv
+from giao_vien gv
+join giao_vien_phu_trach;
+
+select ho_ten_hs from hoc_sinh where ma_hs not in ( select distinct ma_hs from ket_qua_hoc_tap);
+
+select ho_ten_gv from giao_vien where ma_gv not in (select distinct ma_gvpt from phu_trach_bo_mon);
+
+select ho_ten_gv from giao_vien where ma_gv not in ( select distinct ma_gvcn from lop);
+
+select ten_mh from mon_hoc where ma_mh not in (select distinct ma_mh from ket_qua_hoc_tap);
+
+select dia_chi , count(*) as so_luong_hoc_sinh
+from hoc_sinh
+group by dia_chi
+having so_luong_hoc_sinh > 3;
+
+select ten_mh, avg(diem_thi_cuoi_ky) as diem_tb_cuoi_ky
+from mon_hoc mh
+join ket_qua_hoc_tap kq on mh.ma_mh = kq.ma_mh
+group by mh.ma_mh , mh.ten_mh
+having diem_tb_cuoi_ky between 5 and 10;
+
+
+select ho_ten_hs as ho_ten , 'Học sinh' as nghiep_ngh from hoc_sinh
+union
+select ho_ten_gv as ho_ten , 'Giáo viên'as nghiep_ngh from giao_vien;
+
+select month(ngay_gio_thi_cuoi_ky) as thang, avg((diem_thi_cuoi_ky +diem_thi_giua_ky)/2) as diem_trung_binh
+from ket_qua_hoc_tap kq
+where year(ngay_gio_thi_cuoi_ky) = 2023
+group by thang
+order by thang;
+
+select kqht.ma_mh, mh.ten_mh, kqht.diem_thi_cuoi_ky
+from ket_qua_hoc_tap kqht
+join mon_hoc mh on kqht.ma_mh = mh.ma_mh
+where kqht.diem_thi_cuoi_ky is not null
+group by kqht.ma_mh, kqht.diem_thi_cuoi_ky;
+
+select gv.ma_gv, gv.ho_ten_gv
+from giao_vien gv
+join phu_trach_bo_mon pt on gv.ma_gv = pt.ma_gvpt
+group by gv.ma_gv;
+
+select month(kqht.ngay_gio_thi_cuoi_ky) as thang, year(kqht.ngay_gio_thi_cuoi_ky) as nam
+from ket_qua_hoc_tap kqht
+where kqht.diem_thi_cuoi_ky is not null
+group by month(kqht.ngay_gio_thi_cuoi_ky), year(kqht.ngay_gio_thi_cuoi_ky);
+
+select hs.ho_ten_hs
+from hoc_sinh hs
+join ket_qua_hoc_tap kq on hs.ma_hs = kq.ma_hs
+where hs.dia_chi like '%Hải Châu%' and (kq.diem_thi_giua_ky is not null or kq.diem_thi_cuoi_ky is not null)
+group by hs.ho_ten_hs;
+
+-- left join
+select l.ma_lop, l.ten_lop, l.ma_gvcn, gv.ho_ten_gv
+from lop l
+left join giao_vien gv on l.ma_gvcn = gv.ma_gv;
+
+select hs.ma_hs, hs.ho_ten_hs, kq.hoc_ky, kq.ma_mh, mh.ten_mh, kq.diem_thi_giua_ky, kq.diem_thi_cuoi_ky
+from hoc_sinh hs
+left join ket_qua_hoc_tap kq on hs.ma_hs = kq.ma_hs
+left join mon_hoc mh on kq.ma_mh = mh.ma_mh;
+
+select hs.ma_hs, hs.ho_ten_hs, l.ma_lop, l.ten_lop, l.ma_gvcn, gv.ho_ten_gv
+from hoc_sinh hs
+left join lop l on hs.ma_lop = l.ma_lop
+left join giao_vien gv on l.ma_gvcn = gv.ma_gv;
+
+select gv.ma_gv, gv.ho_ten_gv, l.ma_lop, l.ten_lop, pt.ma_mh, pt.hoc_ky, mh.ten_mh
+from giao_vien gv
+left join phu_trach_bo_mon pt on gv.ma_gv = pt.ma_gvpt
+left join lop l on pt.ma_lop = l.ma_lop
+left join mon_hoc mh on pt.ma_mh = mh.ma_mh;
+
+-- limit
+select *
+from hoc_sinh
+where ma_lop = '1A'
+order by ho_ten_hs
+limit 5 offset 10;
+
+select gv.ma_gv, gv.ho_ten_gv, pt.ma_lop, pt.ma_mh, mh.ten_mh
+from phu_trach_bo_mon pt
+join giao_vien gv on pt.ma_gvpt = gv.ma_gv
+join mon_hoc mh on pt.ma_mh = mh.ma_mh
+where pt.ma_lop = '5A'
+order by mh.ten_mh
+limit 5 offset 5;
+
+
+select ho_ten_hs 
+from hoc_sinh hs
+where exists(
+		select 1
+        from ket_qua_hoc_tap kq
+        where kq.ma_hs = hs.ma_hs and kq.ma_mh = 'MH001'
+);
+
+select ho_ten_gv
+from giao_vien gv
+where exists(
+		select 1
+        from phu_trach_bo_mon pt
+        where gv.ma_gv = pt.ma_gvpt
+);
+
+select hs.ma_hs, hs.ho_ten_hs
+from hoc_sinh hs 
+where exists (
+		select 1
+        from lop l
+        where hs.ma_lop = l.ma_lop and hs.ma_lop = 'L0001' or hs.ma_lop = 'L0005'
+);
